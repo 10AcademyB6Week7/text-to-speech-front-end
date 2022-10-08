@@ -2,10 +2,16 @@ import React, {useEffect, useState} from 'react'
 import './Record.css'
 import {Recorder} from 'react-voice-recorder'
 import 'react-voice-recorder/dist/index.css'
+import axios from 'axios'
+import  loading from '../../loading2.gif'
 
+const BASE_URL = "http://localhost:33507"
 export default function Record() {
 
     const [audioUrl, setAudioUrl] = useState(null)
+    const [isLoading, setIsLoading] = useState(false)
+    const [text, setText] = useState(null)
+    
     const [audioDetails, setAudioDetails] = useState({
         url: null,
         blob: null,
@@ -23,8 +29,34 @@ export default function Record() {
         setAudioUrl(data.url)
     }
 
-    function handleAudioUpload(file) {
-        console.log(file);
+    async function handleAudioUpload(file) {
+        // console.log(file);
+        let formData = new FormData();
+        formData.append('file', file)
+        formData.append('json_id',454)
+        formData.append('headline', text['headline'])
+        formData.append('article', text['article']) 
+        try{
+          setIsLoading(true)
+          let res = await axios.post(`${BASE_URL}/get_audio`, formData);
+          console.log(res)
+          let data = res.data;
+          if(data!==undefined){
+            if(data.status === "success"){
+              alert("Recording submitted")
+            }else{
+                alert(data.message)
+            }
+          }
+          else{
+              alert("Something went wrong")
+          }
+        }catch(e){
+                console.log(e)
+                alert(e.message)
+            }finally{
+              setIsLoading(false)
+            }
     }
 
     function handleRest() {
@@ -59,10 +91,35 @@ export default function Record() {
               .catch((err) => {
                 alert(`The following getUserMedia error occurred: ${err}`);
               });
+              setIsLoading(true)
+              getText();
+              setIsLoading(false)
           } else {
             alert("getUserMedia not supported on your browser!");
           }
     },[])
+
+    async function getText(){
+      try{
+        let response = await axios.get(`${BASE_URL}/get_text`)
+        console.log(response)
+        let data = response.data;
+        if(data!==undefined){
+            if(data.status === "success"){
+              setText(data)
+            }else{
+                alert(data.message)
+            }
+        }
+        else{
+            alert("Something went wrong")
+        }
+
+      }catch(e){
+          console.log(e)
+          alert(e.message)
+      }
+    }
 
     function handleOnChange(value, args){
         console.log(value)
@@ -70,7 +127,36 @@ export default function Record() {
     }
 
   return (
-    <div>
+    <div className='home-div'>
+      {isLoading &&
+            <div className='loading'>
+                <img src={loading}></img>
+            </div>}
+            {text!==null&&<div className='data-div'>
+              <br/>
+              <h3>Please record audio reading the below Headline and Article</h3>
+              <br/>
+
+              <hr/>
+              <br/>
+
+              <table id="data">
+                <tbody>
+                  <tr>
+                      <th>Headline</th>
+                      <td>{text['headline']}</td>
+                  </tr>
+                  <tr>
+                      <th>Article</th>
+                      <td>{text['article']}</td>
+                  </tr>
+                  {/* <tr>
+                      <th>Category</th>
+                      <td>{text['category']}</td>
+                  </tr> */}
+                </tbody>
+              </table>
+            </div>}
         <Recorder
           record={true}
 
