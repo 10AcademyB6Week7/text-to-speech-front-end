@@ -69,7 +69,7 @@ export default function Home() {
           </li>
           <Btns/>
         </ul>
-        <h2>Home</h2>
+        <Record/>
     </div>
   )
 }

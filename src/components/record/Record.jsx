@@ -33,7 +33,7 @@ export default function Record() {
         // console.log(file);
         let formData = new FormData();
         formData.append('file', file)
-        formData.append('json_id',454)
+        formData.append('json_id',Math.floor(Math.random() * (60000 - 1 + 1)) + 1)
         formData.append('headline', text['headline'])
         formData.append('article', text['article']) 
         try{
